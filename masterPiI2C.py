@@ -1,5 +1,6 @@
 import smbus
 import time
+from socketIO_client import SocketIO, LoggingNamespace
 
 bus = smbus.SMBus(1)
 arduinos = []
@@ -18,10 +19,9 @@ def readSlave(address):
 	data = bus.read_byte(address)
 	return data
 
-
-
 numArduinos = 1 #change when add more arduinos	
 setupArduinos(numArduinos)
+socket = SocketIO('http://yf-server.herokuapp.com', 80, LoggingNamespace)
 
 while True:
 	sensorData = {}
@@ -30,5 +30,7 @@ while True:
 		time.sleep(.2)
 		slaveData = readSlave(slaveAddr)
 		sensorData[slaveAddr] = slaveData
+		action = {'type': 'SET_SENSOR_STATES', 'sensors': ['1', '2', '3']}
+		socket.emit('action', action)
 	print sensorData
 
